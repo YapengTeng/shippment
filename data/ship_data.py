@@ -59,7 +59,7 @@ class Cost(EmbeddedDocument):
 
 class Self_Pricing(EmbeddedDocument):
 
-    Self_Price_range = FloatField()    # USD
+    Self_Price_range = StringField()    # USD
     Self_Set_price = FloatField()    # USD
     Self_Lowest_price = FloatField()    # USD
     Self_Profit = FloatField()    # USD
@@ -68,7 +68,7 @@ class Self_Pricing(EmbeddedDocument):
 
 class Oversea_Pricing(EmbeddedDocument):
 
-    Oversea_Price_range = FloatField()    # USD
+    Oversea_Price_range = StringField()    # USD
     Oversea_Set_price = FloatField()    # USD
     Oversea_Lowest_price = FloatField()    # USD
     Oversea_Profit_Margin = FloatField()

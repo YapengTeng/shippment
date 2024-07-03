@@ -101,6 +101,11 @@ for sheet_name, df in dfs.items():
                 price_2_5=convert_type(row['Last_Leg']['2_5_price'], float),
             )
 
+            print(convert_type(row['First_Leg']['Air_Transport'], float))
+            print(convert_type(row['First_Leg']['Air_Transport_date'], str))
+
+            print(convert_type(row['Cost']['Oversea_cost'], float))
+
             FirstLeg = First_Leg(
                 Air_Transport=convert_type(row['First_Leg']['Air_Transport'],
                                            float),
@@ -121,7 +126,7 @@ for sheet_name, df in dfs.items():
 
             SelfPricing = Self_Pricing(
                 Self_Price_range=convert_type(
-                    row['Self_Pricing']['Self_Price_range'], float),
+                    row['Self_Pricing']['Self_Price_range'], str),
                 Self_Set_price=convert_type(
                     row['Self_Pricing']['Self_Set_price'], float),
                 Self_Lowest_price=convert_type(
@@ -134,7 +139,7 @@ for sheet_name, df in dfs.items():
 
             OverseaPricing = Oversea_Pricing(
                 Oversea_Price_range=convert_type(
-                    row['Oversea_Pricing']['Oversea_Price_range'], float),
+                    row['Oversea_Pricing']['Oversea_Price_range'], str),
                 Oversea_Set_price=convert_type(
                     row['Oversea_Pricing']['Oversea_Set_price'], float),
                 Oversea_Lowest_price=convert_type(
