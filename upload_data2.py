@@ -109,24 +109,34 @@ def find_nearest_price(weight, electricity):
 
     if not price_kg:
         raise ValueError("No price information available for the selected type and company.")
+    
+    logging.debug(f"Keys in price_kg: {list(price_kg.keys())}")
+    
+    # Ensure all keys are valid floats
+    valid_keys = [k for k in price_kg.keys() if isinstance(k, float) and k is not None]
+    logging.debug(f"Valid keys in price_kg: {valid_keys}")
 
+    if not valid_keys:
+        raise ValueError("No valid price keys available.")
+    
     rounded_weight = min([k for k in price_kg.keys() if k >= weight], default=None)
+    logging.debug(f"Rounded weight: {rounded_weight}")
     if rounded_weight is None:
         raise ValueError("No suitable price tier found for the given weight.")
     
     return rounded_weight, price_kg[rounded_weight], price_unit[rounded_weight], meta_info
 
-def calculate_shipping_cost(product_weight, electricity):
-    nearest_weight, price_y, price_z, meta_info = find_nearest_price(product_weight, electricity)
-    shipping_cost = product_weight * price_y + price_z
+def calculate_shipping_cost(package_weight, electricity):
+    nearest_weight, price_per_kg, unite_price, meta_info = find_nearest_price(package_weight, electricity)
+    shipping_cost = package_weight * price_per_kg + unite_price
 
     return {
         "Selected Type": meta_info['Type'],
         "Selected Company": meta_info['Company'],
         "Selected Brand": meta_info['Brand'],
         "Nearest Weight": nearest_weight,
-        "Price per kg": price_y,
-        "Unit Price": price_z,
+        "Price per kg": price_per_kg,
+        "Unit Price": unite_price,
         "Shipping Cost": shipping_cost
     }
 

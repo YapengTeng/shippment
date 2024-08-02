@@ -67,9 +67,9 @@ def create_app(test_config=None):
     def calculate_shipping_cost_endpoint():
         try:
             data = request.json
-            product_weight = data.get('product_weight')
+            package_weight = data.get('package_weight')
             electricity = data.get('electricity')
-            result = calculate_shipping_cost(product_weight, electricity)
+            result = calculate_shipping_cost(package_weight, electricity)
             return jsonify(result)
         except Exception as e:
             app.logger.error(f"Error: {e}")
