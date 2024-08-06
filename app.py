@@ -12,7 +12,7 @@ from flask_cors import CORS
 from data.table import Product_Pricing
 from data.ship_data import *
 from upload_data2 import calculate_shipping_cost, update_shipping_price, delete_shipping_info, ShippingPriceFirstLeg
-
+import re 
 
 def create_app(test_config=None):
 

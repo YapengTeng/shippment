@@ -8,6 +8,7 @@ import pandas as pd
 
 from data.table import *
 import sys
+import re 
 
 load_dotenv()
 
@@ -204,7 +205,7 @@ def update_shipping_price(collection_name, weight, new_price, **kwargs):
     else:
         return {"error": f"No document found matching the query: {query}"}
 
-def delete_shipping_info(collection_name, **kwargs):
+# def delete_shipping_info(collection_name, **kwargs):
     collection_map = {
         "shipping_price_first_leg": ShippingPriceFirstLeg,
         "air_transport_price_first_leg": AirTransportPriceFirstLeg,
@@ -241,6 +242,41 @@ def delete_shipping_info(collection_name, **kwargs):
     result = collection.delete_many(query)
     print(f"Deleted {result.deleted_count} documents.")
 
+
+def delete_shipping_info(collection_name, **kwargs):
+    collection_map = {
+        "shipping_price_first_leg": ShippingPriceFirstLeg,
+        # 添加其他集合类的映射
+    }
+    
+    collection = collection_map.get(collection_name)
+    if collection is None:
+        print(f"No such collection: {collection_name}")
+        return 0
+
+    query = {}
+
+    if collection_name == "product_shipping_price":
+        if "SKU" in kwargs and kwargs["SKU"]:
+            if isinstance(kwargs["SKU"], list):
+                query['Product_List.sku'] = {'$in': [re.compile(sku, re.IGNORECASE) for sku in kwargs['SKU']]}
+            else:
+                query['Product_List.sku'] = re.compile(kwargs['SKU'], re.IGNORECASE)
+    else:
+        if "types" in kwargs and kwargs["types"]:
+            query['Type'] = {'$in': [re.compile(t, re.IGNORECASE) for t in kwargs['types']]}
+        if "companies" in kwargs and kwargs["companies"]:
+            query['Company'] = {'$in': [re.compile(c, re.IGNORECASE) for c in kwargs['companies']]}
+        if "brands" in kwargs and kwargs["brands"] and collection_name != "sea_transport_price_first_leg":
+            query['Brand'] = {'$in': [re.compile(b, re.IGNORECASE) for b in kwargs['brands']]}
+        if "zones" in kwargs and kwargs["zones"] and collection_name == "sea_transport_price_first_leg":
+            query['Zone'] = {'$in': [re.compile(z, re.IGNORECASE) for z in kwargs['zones']]}
+
+    print(f"Query for deletion: {query}")
+
+    result = collection.objects(__raw__=query).delete()
+    print(f"Deleted {result} documents.")
+    return result
 
 def contains_currency_symbols(value):
     if isinstance(value, str):
