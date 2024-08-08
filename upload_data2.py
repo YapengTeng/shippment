@@ -46,8 +46,10 @@ class ShippingPriceLastLeg(Document):
     meta = {'collection': 'shipping_price_last__leg'}
     Type = StringField()
     Company = StringField()
-    Price_kg = ListField(DictField())
-    Price_unit = ListField(DictField())
+    Brand = StringField()
+    Service = StringField()
+    Price_oz = ListField(DictField())
+    Price_lbs = ListField(DictField())
 
 class ProductShippingPrice(Document):
     meta = {'collection': 'product_shipping_price'}
@@ -57,79 +59,93 @@ class ProductShippingPrice(Document):
     Type = StringField()
     Product_List = ListField(DictField())
 
-def find_nearest_price(weight, electricity):
-    documents_price = ShippingPriceFirstLeg.objects(Company__in=["万邦", "加速"])
+# def find_nearest_price(weight, electricity):
+#     documents_price = ShippingPriceFirstLeg.objects(Company__in=["万邦", "加速"])
     
-    logging.debug(f"Number of documents fetched: {len(documents_price)}")
+#     logging.debug(f"Number of documents fetched: {len(documents_price)}")
         
-    price_kg_with_electricity = {}
-    price_kg_without_electricity = {}
-    price_unit_with_electricity = {}
-    price_unit_without_electricity = {}
-    meta_info_with_electricity = {}
-    meta_info_without_electricity = {}
+#     price_kg_with_electricity = {}
+#     price_kg_without_electricity = {}
+#     price_unit_with_electricity = {}
+#     price_unit_without_electricity = {}
+#     meta_info_with_electricity = {}
+#     meta_info_without_electricity = {}
 
-    for doc in documents_price:
+#     for doc in documents_price:
         
-        logging.debug(f"Processing document: {doc.to_json()}")
+#         logging.debug(f"Processing document: {doc.to_json()}")
         
-        if doc.Type == '小包价格-带电5-10个工作日':
-            logging.debug(f"Processing document: {doc.to_json()}")
-            price_kg_with_electricity = {float(item['key']): float(item['value']) for item in doc.Price_kg}
-            price_unit_with_electricity = {float(item['key']): float(item['value']) for item in doc.Price_unit}
-            meta_info_with_electricity = {
-                "Type": doc.Type,
-                "Company": doc.Company,
-                "Brand": doc.Brand
-            }
-        elif doc.Type == '小包价格-普货5-10工作日':
-            logging.debug(f"Processing document: {doc.to_json()}")
-            price_kg_without_electricity = {float(item['key']): float(item['value']) for item in doc.Price_kg}
-            price_unit_without_electricity = {float(item['key']): float(item['value']) for item in doc.Price_unit}
-            meta_info_without_electricity = {
-                "Type": doc.Type,
-                "Company": doc.Company,
-                "Brand": doc.Brand
-            }
-    logging.debug(f"Price kg with electricity: {price_kg_with_electricity}")
-    logging.debug(f"Price unit with electricity: {price_unit_with_electricity}")
-    logging.debug(f"Price kg without electricity: {price_kg_without_electricity}")
-    logging.debug(f"Price unit without electricity: {price_unit_without_electricity}")
+#         if doc.Type == '小包价格-带电5-10个工作日':
+#             logging.debug(f"Processing document: {doc.to_json()}")
+#             price_kg_with_electricity = {float(item['key']): float(item['value']) for item in doc.Price_kg}
+#             price_unit_with_electricity = {float(item['key']): float(item['value']) for item in doc.Price_unit}
+#             meta_info_with_electricity = {
+#                 "Type": doc.Type,
+#                 "Company": doc.Company,
+#                 "Brand": doc.Brand
+#             }
+#         elif doc.Type == '小包价格-普货5-10工作日':
+#             logging.debug(f"Processing document: {doc.to_json()}")
+#             price_kg_without_electricity = {float(item['key']): float(item['value']) for item in doc.Price_kg}
+#             price_unit_without_electricity = {float(item['key']): float(item['value']) for item in doc.Price_unit}
+#             meta_info_without_electricity = {
+#                 "Type": doc.Type,
+#                 "Company": doc.Company,
+#                 "Brand": doc.Brand
+#             }
+#     logging.debug(f"Price kg with electricity: {price_kg_with_electricity}")
+#     logging.debug(f"Price unit with electricity: {price_unit_with_electricity}")
+#     logging.debug(f"Price kg without electricity: {price_kg_without_electricity}")
+#     logging.debug(f"Price unit without electricity: {price_unit_without_electricity}")
 
-    if electricity == 'Y':
-        price_kg = price_kg_with_electricity
-        price_unit = price_unit_with_electricity
-        meta_info = meta_info_with_electricity
-    else:
-        price_kg = price_kg_without_electricity
-        price_unit = price_unit_without_electricity
-        meta_info = meta_info_without_electricity
+#     if electricity == 'Y':
+#         price_kg = price_kg_with_electricity
+#         price_unit = price_unit_with_electricity
+#         meta_info = meta_info_with_electricity
+#     else:
+#         price_kg = price_kg_without_electricity
+#         price_unit = price_unit_without_electricity
+#         meta_info = meta_info_without_electricity
 
-    logging.debug(f"Price kg: {price_kg}")
-    logging.debug(f"Price unit: {price_unit}")
+#     logging.debug(f"Price kg: {price_kg}")
+#     logging.debug(f"Price unit: {price_unit}")
 
-    if not price_kg:
-        raise ValueError("No price information available for the selected type and company.")
+#     if not price_kg:
+#         raise ValueError("No price information available for the selected type and company.")
     
-    logging.debug(f"Keys in price_kg: {list(price_kg.keys())}")
+#     logging.debug(f"Keys in price_kg: {list(price_kg.keys())}")
     
-    # Ensure all keys are valid floats
-    valid_keys = [k for k in price_kg.keys() if isinstance(k, float) and k is not None]
-    logging.debug(f"Valid keys in price_kg: {valid_keys}")
+#     # Ensure all keys are valid floats
+#     valid_keys = [k for k in price_kg.keys() if isinstance(k, float) and k is not None]
+#     logging.debug(f"Valid keys in price_kg: {valid_keys}")
 
-    if not valid_keys:
-        raise ValueError("No valid price keys available.")
+#     if not valid_keys:
+#         raise ValueError("No valid price keys available.")
     
-    rounded_weight = min([k for k in price_kg.keys() if k >= weight], default=None)
-    logging.debug(f"Rounded weight: {rounded_weight}")
-    if rounded_weight is None:
-        raise ValueError("No suitable price tier found for the given weight.")
+#     rounded_weight = min([k for k in price_kg.keys() if k >= weight], default=None)
+#     logging.debug(f"Rounded weight: {rounded_weight}")
+#     if rounded_weight is None:
+#         raise ValueError("No suitable price tier found for the given weight.")
     
-    return rounded_weight, price_kg[rounded_weight], price_unit[rounded_weight], meta_info
+#     return rounded_weight, price_kg[rounded_weight], price_unit[rounded_weight], meta_info
 
-def calculate_shipping_cost(package_weight, electricity):
-    nearest_weight, price_per_kg, unite_price, meta_info = find_nearest_price(package_weight, electricity)
-    shipping_cost = package_weight * price_per_kg + unite_price
+# def calculate_shipping_cost(package_weight, electricity):
+#     nearest_weight, price_per_kg, unite_price, meta_info = find_nearest_price(package_weight, electricity)
+#     shipping_cost = package_weight * price_per_kg + unite_price
+
+#     return {
+#         "Selected Type": meta_info['Type'],
+#         "Selected Company": meta_info['Company'],
+#         "Selected Brand": meta_info['Brand'],
+#         "Nearest Weight": nearest_weight,
+#         "Price per kg": price_per_kg,
+#         "Unit Price": unite_price,
+#         "Shipping Cost": shipping_cost
+#     }
+
+def calculate_shipping_cost_first_leg(package_weight, electricity):
+    nearest_weight, price_per_kg, unit_price, meta_info = find_nearest_price_first_leg(package_weight, electricity)
+    shipping_cost = package_weight * price_per_kg + unit_price
 
     return {
         "Selected Type": meta_info['Type'],
@@ -137,9 +153,145 @@ def calculate_shipping_cost(package_weight, electricity):
         "Selected Brand": meta_info['Brand'],
         "Nearest Weight": nearest_weight,
         "Price per kg": price_per_kg,
-        "Unit Price": unite_price,
+        "Unit Price": unit_price,
         "Shipping Cost": shipping_cost
     }
+
+def find_nearest_price_first_leg(weight, electricity):
+    documents_price = ShippingPriceFirstLeg.objects(Company__in=["万邦", "加速"])
+    
+    logging.debug(f"Number of documents fetched: {len(documents_price)}")
+    
+    min_price_kg = float('inf')
+    min_price_unit = float('inf')
+    best_meta_info = None
+    
+    for doc in documents_price:
+        logging.debug(f"Processing document: {doc.to_json()}")
+        
+        if electricity == 'Y' and doc.Type == '小包价格-带电5-10个工作日':
+            price_kg = {float(item['key']): float(item['value']) for item in doc.Price_kg}
+            price_unit = {float(item['key']): float(item['value']) for item in doc.Price_unit}
+        elif electricity != 'Y' and doc.Type == '小包价格-普货5-10工作日':
+            price_kg = {float(item['key']): float(item['value']) for item in doc.Price_kg}
+            price_unit = {float(item['key']): float(item['value']) for item in doc.Price_unit}
+        else:
+            continue
+
+        logging.debug(f"Price kg: {price_kg}")
+        logging.debug(f"Price unit: {price_unit}")
+
+        if not price_kg:
+            raise ValueError("No price information available for the selected type and company.")
+        
+        logging.debug(f"Keys in price_kg: {list(price_kg.keys())}")
+
+        valid_keys = [k for k in price_kg.keys() if isinstance(k, float) and k is not None]
+        logging.debug(f"Valid keys in price_kg: {valid_keys}")
+
+        if not valid_keys:
+            continue
+        
+        rounded_weight = min([k for k in valid_keys if k >= weight], default=None)
+        logging.debug(f"Rounded weight: {rounded_weight}")
+        
+        if rounded_weight is None:
+            continue
+
+        current_price_kg = price_kg[rounded_weight]
+        current_price_unit = price_unit[rounded_weight]
+
+        total_cost = weight * current_price_kg + current_price_unit
+        
+        if total_cost < min_price_kg * weight + min_price_unit:
+            min_price_kg = current_price_kg
+            min_price_unit = current_price_unit
+            best_meta_info = {
+                "Type": doc.Type,
+                "Company": doc.Company,
+                "Brand": doc.Brand
+            }
+
+    if best_meta_info is None:
+        raise ValueError("No suitable price tier found for the given weight.")
+
+    return rounded_weight, min_price_kg, min_price_unit, best_meta_info
+
+def calculate_shipping_cost_last_leg(oz, lbs, zone):
+    if oz:
+        weight = oz
+        weight_type = 'oz'
+    elif lbs:
+        weight = lbs
+        weight_type = 'lbs'
+    else:
+        raise ValueError("Either oz or lbs must be provided")
+
+    rounded_weight, price, meta_info = find_nearest_price_last_leg(weight, weight_type, zone)
+    shipping_cost = weight * price
+
+    return {
+        "Selected Type": meta_info['Type'],
+        "Selected Company": meta_info['Company'],
+        "Selected Brand": meta_info['Brand'],
+        "Selected Service": meta_info['Service'],
+        "Rounded Weight": rounded_weight,
+        "Price": price,
+        "Shipping Cost": shipping_cost
+    }
+
+def find_nearest_price_last_leg(weight, weight_type, zone):
+    query = {"Service": re.compile(f'ZONE {zone}', re.IGNORECASE)} if zone else {"Service": {"$not": re.compile('ZONE', re.IGNORECASE)}}
+    documents_price = ShippingPriceLastLeg.objects(__raw__=query)
+
+    logging.debug(f"Number of documents fetched: {len(documents_price)}")
+    
+    min_price = float('inf')
+    best_meta_info = None
+    
+    for doc in documents_price:
+        logging.debug(f"Processing document: {doc.to_json()}")
+        
+        if weight_type == 'oz':
+            price_list = doc.Price_oz
+        else:
+            price_list = doc.Price_lbs
+        
+        price_dict = {float(item['key']): float(item['value']) for item in price_list if item['value']}
+        
+        logging.debug(f"Price dict: {price_dict}")
+
+        if not price_dict:
+            continue
+
+        valid_keys = [k for k in price_dict.keys() if isinstance(k, float) and k is not None]
+        logging.debug(f"Valid keys in price_dict: {valid_keys}")
+
+        if not valid_keys:
+            continue
+        
+        rounded_weight = min([k for k in valid_keys if k >= weight], default=None)
+        logging.debug(f"Rounded weight: {rounded_weight}")
+        
+        if rounded_weight is None:
+            continue
+
+        current_price = price_dict[rounded_weight]
+
+        if current_price < min_price:
+            min_price = current_price
+            best_meta_info = {
+                "Type": doc.Type,
+                "Company": doc.Company,
+                "Brand": doc.Brand,
+                "Service": doc.Service
+            }
+
+    if best_meta_info is None:
+        raise ValueError("No suitable price tier found for the given weight and zone.")
+
+    return rounded_weight, min_price, best_meta_info
+
 
 def update_shipping_price(collection_name, weight, new_price, **kwargs):
     collection_map = {

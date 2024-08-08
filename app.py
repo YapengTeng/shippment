@@ -11,7 +11,8 @@ from flask_cors import CORS
 
 from data.table import Product_Pricing
 from data.ship_data import *
-from upload_data2 import calculate_shipping_cost, update_shipping_price, delete_shipping_info, ShippingPriceFirstLeg
+#from upload_data2 import calculate_shipping_cost, update_shipping_price, delete_shipping_info, ShippingPriceFirstLeg
+from upload_data2 import calculate_shipping_cost_first_leg, calculate_shipping_cost_last_leg, update_shipping_price, delete_shipping_info, ShippingPriceFirstLeg
 import re 
 
 def create_app(test_config=None):
@@ -67,13 +68,37 @@ def create_app(test_config=None):
     def calculate_shipping_cost_endpoint():
         try:
             data = request.json
-            package_weight = data.get('package_weight')
-            electricity = data.get('electricity')
-            result = calculate_shipping_cost(package_weight, electricity)
+            lag = data.get('lag')
+            
+            if lag == 'first':
+                package_weight = data.get('package_weight')
+                electricity = data.get('electricity')
+                result = calculate_shipping_cost_first_leg(package_weight, electricity)
+            elif lag == 'last':
+                oz = data.get('oz')
+                lbs = data.get('lbs')
+                zone = data.get('zone')
+                result = calculate_shipping_cost_last_leg(oz, lbs, zone)
+            else:
+                raise ValueError("Invalid lag parameter")
+            
             return jsonify(result)
         except Exception as e:
             app.logger.error(f"Error: {e}")
             return jsonify({"error": str(e)}), 500
+
+    
+    # @app.route('/calculate_shipping_cost', methods=['POST'])
+    # def calculate_shipping_cost_endpoint():
+    #     try:
+    #         data = request.json
+    #         package_weight = data.get('package_weight')
+    #         electricity = data.get('electricity')
+    #         result = calculate_shipping_cost(package_weight, electricity)
+    #         return jsonify(result)
+    #     except Exception as e:
+    #         app.logger.error(f"Error: {e}")
+    #         return jsonify({"error": str(e)}), 500
         
     @app.route('/update_shipping_price', methods=['POST'])
     def update_shipping_price_endpoint():
